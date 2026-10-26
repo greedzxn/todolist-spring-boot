@@ -47,14 +47,34 @@ public class TaskController {
 
     @PostMapping("/listTasks")
     public List<TaskModel> listTasks(HttpServletRequest request) {
-        return this.taskRepository.findByIdUser((UUID) request.getAttribute("idUser"));
+        return this.taskRepository.findByIdUser((UUID)request.getAttribute("idUser"));
     }
 
     @PutMapping("/{id}")
-    public TaskModel update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id) {
+    //trocar de task model para ResponseEntity
+    public ResponseEntity update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID id) {
         var task = this.taskRepository.findById(id).orElse(null);
 
+        // validar se tarefa existe
+        
+        if (task == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Essa tarefa não existe");
+        }
+        
+
+        // validar se o usuario eh o mesmo dono da tarefa
+
+        var idUser = request.getAttribute("idUser");
+
+        if (!task.getIdUser().equals(idUser)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Usuário não tem permissão para acessar essa tarefa");
+        }
+
         Utils.copyNonNullProperties(taskModel, task);
-        return this.taskRepository.save(task);
+
+        return ResponseEntity.status(HttpStatus.OK).
+            body(this.taskRepository.save(task));
     }
 }
