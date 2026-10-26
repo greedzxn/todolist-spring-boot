@@ -1,6 +1,7 @@
 package br.com.greedzxn.todolist.task;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,4 +41,9 @@ public class TaskController {
         var task = this.taskRepository.save(taskModel);
         return ResponseEntity.status(HttpStatus.OK).body(task);
        }
+
+    @PostMapping("/listTasks")
+    public List<TaskModel> listTasks(HttpServletRequest request) {
+        return this.taskRepository.findByIdUser((UUID) request.getAttribute("idUser"));
+    }
 }
